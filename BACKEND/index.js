@@ -13,13 +13,17 @@ const authRoute = require("./routes/AuthRoute");
 const { userVerification } = require("./middlewares/AuthMiddleware");
 
 const PORT = process.env.PORT || 3002;
-const uri = process.env.MONGO_URL;
+const uri = process.env.MONGO_URI;
 
 const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      "http://localhost:3000",
+      "https://zerodha-frontend.onrender.com",
+      "https://zerodha-dashboard.onrender.com"
+    ],
     credentials: true,
   })
 );
@@ -225,8 +229,15 @@ app.post("/newOrder", async(req, res) => {
   res.send("Order saved!");
 });
 
-app.listen(PORT, () => {
-  console.log("App started");
-  mongoose.connect(uri);
-  console.log("DB connected");
-});
+mongoose
+  .connect(uri)
+  .then(() => {
+    console.log("DB connected");
+
+    app.listen(PORT, () => {
+      console.log(`App started on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("DB connection error:", err);
+  });
